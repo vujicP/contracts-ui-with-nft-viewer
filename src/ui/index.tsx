@@ -16,6 +16,7 @@ import {
   Settings,
   NotFound,
 } from 'ui/pages';
+import { RMRKViewer } from '../rmrk/RMRKViewer';
 
 globalThis.Buffer = Buffer;
 
@@ -31,6 +32,7 @@ root.render(
       <Route path="/" element={<App />}>
         <Route index element={<Homepage />} />
         <Route path="add-contract" element={<AddContract />} />
+        <Route path="rmrk-viewer" element={<RMRKViewer />} />
         <Route path="hash-lookup" element={<SelectCodeHash />} />
         <Route path="instantiate" element={<Instantiate />}>
           <Route path=":codeHash" />
