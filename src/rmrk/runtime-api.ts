@@ -16,13 +16,10 @@ const resolveURL = url => {
 const fetchMetadata = metadata =>
   fetch(resolveURL(metadata)).then(result => result?.json() ?? 'no metadata');
 
-const fetchImage = metadata =>
-  fetch(resolveURL(metadata.image))
+const fetchImage = url =>
+  fetch(resolveURL(url))
     .then(response => response.blob())
-    .then(blob => ({
-      imageUrl: URL.createObjectURL(blob),
-      description: metadata.description,
-    }));
+    .then(blob => URL.createObjectURL(blob));
 
 export function useRmrkCollections() {
   const { api } = useApi();
@@ -35,8 +32,20 @@ export function useRmrkCollections() {
 
   const queryCollectionByIndex = index =>
     new Promise<any>(async (resolve, reject) => {
-      const result = await api.query.rmrkCore.collections(index);
-      resolve(result.toHuman());
+      const response = await api.query.rmrkCore.collections(index);
+      const data = response.toHuman();
+      let metadata = null;
+      if (
+        data.metadata &&
+        (data.metadata.startsWith(ipfsPrefix) || data.metadata.startsWith('http'))
+      ) {
+        metadata = await fetchMetadata(data.metadata);
+      }
+      let imageUrl = null;
+      if (metadata && metadata.image) {
+        imageUrl = await fetchImage(metadata.image);
+      }
+      resolve({ id: index, imageUrl, description: metadata.description, metadata });
     });
 
   const queryCollections = () =>
@@ -46,17 +55,42 @@ export function useRmrkCollections() {
       for (let i = 0; i < index; i++) {
         collArray[i] = i;
       }
-      const results = await Promise.all(collArray.map(x => queryCollectionByIndex(x)));
-      const metadata = await Promise.all(
-        results.map(x => (x.metadata.startsWith(ipfsPrefix) ? fetchMetadata(x.metadata) : null))
-      );
-      const images = await Promise.all(
-        metadata.filter(x => x?.image).map(x => (x?.image ? fetchImage(x) : null))
-      );
-      resolve(images);
+      const images = await Promise.all(collArray.map(x => queryCollectionByIndex(x)));
+      images.reverse();
+      resolve(images.filter(x => x?.description));
     });
 
-  return { queryCollections };
+  const queryNft = (collection, nftId) =>
+    new Promise<any>(async (resolve, reject) => {
+      const result = await api.query.rmrkCore.nfts(collection.id, nftId);
+      const json = result.toHuman();
+      const metadata = await fetchMetadata(json.metadata);
+      const imageUrl = await fetchImage(metadata.mediaUri);
+      resolve({ collection, nftId, metadata, imageUrl });
+    });
+
+  const queryNfts = collection =>
+    new Promise<any>(async (resolve, reject) => {
+      const index = await api.query.rmrkCore.nextNftId(collection.id);
+
+      const collArray = [];
+      for (let i = 0; i < index.toNumber() - 1; i++) {
+        collArray[i] = i;
+      }
+
+      const results = await Promise.all(collArray.map(x => queryNft(collection, x)));
+      results.reverse();
+      resolve(results);
+    });
+
+  const queryAllNfts = () =>
+    new Promise<any>(async (resolve, reject) => {
+      const collections = await queryCollections();
+      const nfts = await Promise.all(collections.map(queryNfts));
+      resolve(nfts.flat());
+    });
+
+  return { queryCollections, queryAllNfts };
 }
 
 export function useRmrkCoreResources() {

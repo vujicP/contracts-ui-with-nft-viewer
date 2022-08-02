@@ -1,13 +1,12 @@
 // Copyright 2022 @paritytech/contracts-ui authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
-import { Link } from 'react-router-dom';
 import { CollectionIcon, CreditCardIcon } from '@heroicons/react/outline';
-import { Page, PageFull } from 'ui/templates';
+import { useState } from 'react';
+import { PageFull } from 'ui/templates';
 import { Tabs } from 'ui/components';
 import { ViewNfts } from 'src/rmrk/ViewNfts';
 import { ViewCollections } from 'src/rmrk/ViewCollections';
-import { useState } from 'react';
 
 export function RMRKViewer() {
   const TABS = [
