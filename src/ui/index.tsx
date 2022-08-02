@@ -17,6 +17,8 @@ import {
   NotFound,
 } from 'ui/pages';
 import { RMRKViewer } from '../rmrk/RMRKViewer';
+import { ViewCollection } from 'src/rmrk/ViewCollection';
+import { ViewNft } from 'src/rmrk/ViewNft';
 
 globalThis.Buffer = Buffer;
 
@@ -40,6 +42,8 @@ root.render(
         <Route path="contract/:address/" element={<Contract />} />
         <Route path="settings" element={<Settings />} />
         <Route path="*" element={<NotFound />} />
+        <Route path="/rmrk-collection/:collectionId/" element={<ViewCollection />} />
+        <Route path="/rmrk-nft/:collectionId/:nftId" element={<ViewNft />} />
       </Route>
     </Routes>
   </BrowserRouter>

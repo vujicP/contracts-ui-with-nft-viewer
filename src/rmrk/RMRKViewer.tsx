@@ -30,7 +30,7 @@ export function RMRKViewer() {
     },
   ];
 
-  const [tabIndex, setTabIndex] = useState(1);
+  const [tabIndex, setTabIndex] = useState(0);
 
   return (
     <PageFull header="RMRK viewer" help={'Explore RMRK collections and NFTs'}>

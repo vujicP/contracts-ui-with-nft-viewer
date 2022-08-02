@@ -60,25 +60,25 @@ export function useRmrkCollections() {
       resolve(images.filter(x => x?.description));
     });
 
-  const queryNft = (collection, nftId) =>
+  const queryNft = (collectionId, nftId) =>
     new Promise<any>(async (resolve, reject) => {
-      const result = await api.query.rmrkCore.nfts(collection.id, nftId);
-      const json = result.toHuman();
-      const metadata = await fetchMetadata(json.metadata);
+      const result = await api.query.rmrkCore.nfts(collectionId, nftId);
+      const nft = result.toHuman();
+      const metadata = await fetchMetadata(nft.metadata);
       const imageUrl = await fetchImage(metadata.mediaUri);
-      resolve({ collection, nftId, metadata, imageUrl });
+      resolve(Object.assign(nft, { collectionId, id: nftId, metadata, imageUrl }));
     });
 
-  const queryNfts = collection =>
+  const queryNfts = collectionId =>
     new Promise<any>(async (resolve, reject) => {
-      const index = await api.query.rmrkCore.nextNftId(collection.id);
+      const index = await api.query.rmrkCore.nextNftId(collectionId);
 
       const collArray = [];
       for (let i = 0; i < index.toNumber() - 1; i++) {
         collArray[i] = i;
       }
 
-      const results = await Promise.all(collArray.map(x => queryNft(collection, x)));
+      const results = await Promise.all(collArray.map(x => queryNft(collectionId, x)));
       results.reverse();
       resolve(results);
     });
@@ -86,11 +86,16 @@ export function useRmrkCollections() {
   const queryAllNfts = () =>
     new Promise<any>(async (resolve, reject) => {
       const collections = await queryCollections();
-      const nfts = await Promise.all(collections.map(queryNfts));
+      const nfts = await Promise.all(
+        collections.map(async (x, i) => {
+          const nfts = await queryNfts(x.id);
+          return nfts.map(y => Object.assign(y, { collection: collections[i] }));
+        })
+      );
       resolve(nfts.flat());
     });
 
-  return { queryCollections, queryAllNfts };
+  return { queryCollections, queryCollectionByIndex, queryAllNfts, queryNfts, queryNft };
 }
 
 export function useRmrkCoreResources() {
