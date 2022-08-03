@@ -9,6 +9,7 @@ export enum RPC {
   CONTRACTS = 'wss://rococo-contracts-rpc.polkadot.io',
   SHIBUYA = 'wss://rpc.shibuya.astar.network',
   SHIDEN = 'wss://rpc.shiden.astar.network',
+  ROOSTER = 'wss://api1.dwellir.com/hack-na/rooster'
 }
 export const DEFAULT_DECIMALS = 12;
 
