@@ -13,6 +13,8 @@ export function ViewCollections() {
     queryCollections().then(x => setCollections(x));
   }, []);
   return (
+    <>
+    <div className="mb-4 italic">! only shows last 10 collections atm !</div>
     <div className="grid grid-cols-12 gap-4 w-full">
       {collections.map(collection => (
         <div className="col-span-3 " key={collection.id}>
@@ -31,5 +33,6 @@ export function ViewCollections() {
         </div>
       ))}
     </div>
+    </>
   );
 }

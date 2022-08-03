@@ -63,8 +63,8 @@ export function useRmrkCollections() {
     new Promise<any>(async (resolve, reject) => {
       const index = await queryCollectionCount();
       const collArray = [];
-      const maxNumber = Math.min(index, 11);
-      for (let i = 0; i < maxNumber; i++) {
+      const minNumber = index - 1 - 10;
+      for (let i = index - 1; i > minNumber; i--) {
         collArray[i] = i;
       }
       const images = await Promise.all(collArray.map(x => queryCollectionByIndex(x)));
@@ -89,8 +89,8 @@ export function useRmrkCollections() {
       const index = await api.query.rmrkCore.nextNftId(collectionId);
 
       const collArray = [];
-      const maxNumber = Math.min(index.toNumber(), 11);
-      for (let i = 0; i < maxNumber; i++) {
+      const minNumber = index - 1 - 10;
+      for (let i = index - 1; i > minNumber; i--) {
         collArray[i] = i;
       }
 
