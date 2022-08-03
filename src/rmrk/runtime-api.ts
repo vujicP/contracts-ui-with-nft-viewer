@@ -5,21 +5,25 @@ import { useApi } from '../../src/ui/contexts';
 
 const ipfsGateway = 'https://gateway.ipfs.io/ipfs/';
 const ipfsPrefix = 'ipfs://ipfs/';
-const resolveURL = url => {
-  if (url.startsWith(ipfsPrefix)) {
-    return ipfsGateway + url.replace(ipfsPrefix, '');
+const resolveResource = resource => {
+  if (resource.startsWith(ipfsPrefix)) {
+    return ipfsGateway + resource.replace(ipfsPrefix, '');
+  } else if (resource.startsWith('http')) {
+    return resource;
   } else {
-    return '';
+    return null;
   }
 };
 
-const fetchMetadata = metadata =>
-  fetch(resolveURL(metadata)).then(result => result?.json() ?? 'no metadata');
+const fetchMetadata = metadata => {
+  const resource = resolveResource(metadata);
+  return resource ? fetch(resource).then(result => result?.json() ?? null) : null;
+};
 
-const fetchImage = url =>
-  fetch(resolveURL(url))
-    .then(response => response.blob())
-    .then(blob => URL.createObjectURL(blob));
+const fetchImage = url => resolveResource(url);
+// fetch(resolveResource(url))
+//   .then(response => response.blob())
+//   .then(blob => URL.createObjectURL(blob));
 
 export function useRmrkCollections() {
   const { api } = useApi();
@@ -42,17 +46,25 @@ export function useRmrkCollections() {
         metadata = await fetchMetadata(data.metadata);
       }
       let imageUrl = null;
-      if (metadata && metadata.image) {
-        imageUrl = await fetchImage(metadata.image);
+      if (metadata && (metadata.mediaUri || metadata.image)) {
+        imageUrl = await fetchImage(metadata.mediaUri || metadata.image);
       }
-      resolve({ id: index, imageUrl, description: metadata.description, metadata });
+      resolve(
+        Object.assign(data, {
+          id: index,
+          imageUrl,
+          description: metadata?.description ?? null,
+          metadata,
+        })
+      );
     });
 
   const queryCollections = () =>
     new Promise<any>(async (resolve, reject) => {
       const index = await queryCollectionCount();
       const collArray = [];
-      for (let i = 0; i < index; i++) {
+      const maxNumber = Math.min(index, 11);
+      for (let i = 0; i < maxNumber; i++) {
         collArray[i] = i;
       }
       const images = await Promise.all(collArray.map(x => queryCollectionByIndex(x)));
@@ -65,7 +77,10 @@ export function useRmrkCollections() {
       const result = await api.query.rmrkCore.nfts(collectionId, nftId);
       const nft = result.toHuman();
       const metadata = await fetchMetadata(nft.metadata);
-      const imageUrl = await fetchImage(metadata.mediaUri);
+      let imageUrl = null;
+      if (metadata && metadata.mediaUri) {
+        imageUrl = await fetchImage(metadata.mediaUri);
+      }
       resolve(Object.assign(nft, { collectionId, id: nftId, metadata, imageUrl }));
     });
 
@@ -74,7 +89,8 @@ export function useRmrkCollections() {
       const index = await api.query.rmrkCore.nextNftId(collectionId);
 
       const collArray = [];
-      for (let i = 0; i < index.toNumber() - 1; i++) {
+      const maxNumber = Math.min(index.toNumber(), 11);
+      for (let i = 0; i < maxNumber; i++) {
         collArray[i] = i;
       }
 

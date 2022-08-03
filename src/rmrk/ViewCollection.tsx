@@ -28,7 +28,7 @@ export function ViewCollection() {
           <div className="col-span-3" key={nft?.id}>
             <div
               onClick={() => navigate(`/rmrk-nft/${collection.id}/${nft.id}`)}
-              className="w-80 border text-gray-500 dark:border-gray-700 border-gray-200 rounded-xl dark:bg-elevation-1 dark:hover:bg-elevation-2 hover:bg-gray-100 cursor-pointer"
+              className="w-72 border text-gray-500 dark:border-gray-700 border-gray-200 rounded-xl dark:bg-elevation-1 dark:hover:bg-elevation-2 hover:bg-gray-100 cursor-pointer"
             >
               <div className="flex justify-center text-base dark:text-gray-300 text-gray-500 h-72">
                 <img className="p-4" src={nft?.imageUrl}></img>
