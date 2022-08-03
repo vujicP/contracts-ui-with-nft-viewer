@@ -59,16 +59,21 @@ export function useRmrkCollections() {
       );
     });
 
-  const queryCollections = () =>
+  const queryCollections = (startIndex = null) =>
     new Promise<any>(async (resolve, reject) => {
-      const index = await queryCollectionCount();
+      let index = null;
+      if (startIndex) {
+        index = startIndex - 1;
+      } else {
+        index = (await queryCollectionCount()) - 1;
+      }
+
       const collArray = [];
-      const minNumber = index - 1 - 10;
-      for (let i = index - 1; i > minNumber; i--) {
-        collArray[i] = i;
+      const minNumber = Math.max(0, index - 9);
+      for (let i = index; i >= minNumber; i--) {
+        collArray[index - i] = i;
       }
       const images = await Promise.all(collArray.map(x => queryCollectionByIndex(x)));
-      images.reverse();
       resolve(images.filter(x => x?.description));
     });
 

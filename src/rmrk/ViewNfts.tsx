@@ -15,7 +15,7 @@ export function ViewNfts() {
   return (
     <div className="grid grid-cols-12 gap-4 w-full">
       {nfts.map(nft => (
-        <div className="col-span-3">
+        <div className="col-span-3" key={`${nft?.collectionId}-${nft?.id}`}>
           <div
             onClick={() => navigate(`/rmrk-nft/${nft.collection.id}/${nft.id}`)}
             className="w-72 border text-gray-500 dark:border-gray-700 border-gray-200 rounded-xl dark:bg-elevation-1 dark:hover:bg-elevation-2 hover:bg-gray-100 cursor-pointer"
