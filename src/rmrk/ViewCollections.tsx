@@ -24,7 +24,8 @@ export function ViewCollections() {
               <img className="p-4" src={collection.imageUrl}></img>
             </div>
             <div className="border-t -md pl-4 pt-4 pb-4 text-gray-500 dark:border-gray-700 border-gray-200 items-center text-base dark:text-gray-300 text-gray-500">
-              {collection.description}
+              <div>{collection.description}</div>
+              <div className="mt-2 italic">Collection of {collection.nftsCount}</div>
             </div>
           </div>
         </div>

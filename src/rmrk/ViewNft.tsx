@@ -4,6 +4,7 @@
 import { getContractInfo } from 'api';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
+import { Link } from 'react-router-dom';
 import { useApi } from 'ui/contexts';
 import { PageFull } from 'ui/templates';
 import { Address } from './Address';
@@ -52,9 +53,17 @@ export function ViewNft() {
       </div>
       <div className="mb-4">
         <div>NFT Id: {nft.id}</div>
-        <div>Collection Id: {nft.collectionId}</div>
         <div>
-          <span className="mr-2">Owned by: {ownedBy.meta.name}</span>
+          Collection Id:
+          <Link
+            className="ml-2 underline dark:hover:text-gray-300 hover:text-gray-400"
+            to={`/rmrk-collection/${nft.collectionId}`}
+          >
+            {nft.collectionId}
+          </Link>
+        </div>
+        <div>
+          <span className="mr-2">Owned by: {ownedBy.meta?.name}</span>
           <Address address={ownedBy.address}></Address>
         </div>
         <div>
