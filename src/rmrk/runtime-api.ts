@@ -104,7 +104,7 @@ export function useRmrkCollections() {
       const index = await api.query.rmrkCore.nextNftId(collectionId);
 
       const collArray = [];
-      const minNumber = index - 1 - 10;
+      const minNumber = Math.min(-1, index - 1 - 10);
       for (let i = index - 1; i > minNumber; i--) {
         collArray[i] = i;
       }
@@ -114,16 +114,27 @@ export function useRmrkCollections() {
       resolve(results);
     });
 
-  const queryAllNfts = () =>
+  const queryAllNfts = (startIndex = null) =>
     new Promise<any>(async (resolve, reject) => {
-      const collections = await queryCollections();
+      const collections = await queryCollections(startIndex);
+
       const nfts = await Promise.all(
-        collections.map(async (x, i) => {
+        (collections.collections ?? collections).map(async (x, i) => {
           const nfts = await queryNfts(x.id);
-          return nfts.map(y => Object.assign(y, { collection: collections[i] }));
+          return nfts.map(y =>
+            Object.assign(y, { collection: collections?.collections?.[i] ?? collections[i] })
+          );
         })
       );
-      resolve(nfts.flat());
+
+      let result;
+      if (collections.end) {
+        result = { end: true, nfts: nfts.flat() };
+      } else {
+        result = nfts.flat();
+      }
+
+      resolve(result);
     });
 
   return { queryCollections, queryCollectionByIndex, queryAllNfts, queryNfts, queryNft };
