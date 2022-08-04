@@ -18,3 +18,18 @@ export function Loader({ children, isLoading, message = 'Loading...' }: Props): 
     <>{children}</>
   );
 }
+
+export function LoaderSmall({
+  children,
+  isLoading,
+  message = 'Loading...'
+}: Props): React.ReactElement {
+  return isLoading ? (
+    <div className="text-lg flex font-bolder text-gray-500">
+      <Spinner className="mb-3 border-gray-500 " width={8} strokeWidth={2} />
+      <div className="ml-5">{message}</div>
+    </div>
+  ) : (
+    <>{children}</>
+  );
+}

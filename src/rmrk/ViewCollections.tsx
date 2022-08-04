@@ -1,8 +1,9 @@
 // Copyright 2022 @paritytech/contracts-ui authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
-import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { LoaderSmall } from 'ui/components';
 import { useRmrkCollections } from './runtime-api';
 
 export function ViewCollections() {
@@ -15,21 +16,25 @@ export function ViewCollections() {
   const [scrollEndReached, setScrollEnd] = useState(false);
   const loader = useRef(null);
 
+  const setQueryResult = result => {
+    if (result.end) {
+      setScrollEnd(true);
+      setCollections(result.collections);
+    } else {
+      setCollections(result);
+    }
+  };
+
   useEffect(() => {
-    queryCollections().then(x => {
-      setCollections(x);
-    });
+    queryCollections().then(setQueryResult);
   }, []);
 
   useEffect(() => {
     observer && observer.disconnect();
     setObserver(
       new IntersectionObserver(entries => {
-        if (entries[0].isIntersecting === true) {
-          collections.length > 0 &&
-            queryCollections(collections.slice(-1)[0].id).then(x => {
-              setCollections(x);
-            });
+        if (entries[0].isIntersecting === true && collections.length > 0 && !scrollEndReached) {
+          queryCollections(collections.slice(-1)[0].id).then(setQueryResult);
         }
       })
     );
@@ -45,18 +50,8 @@ export function ViewCollections() {
     scrollEndReached && observer && observer.disconnect();
   }, [scrollEndReached]);
 
-  useEffect(() => {
-    if (collections.length > 0 && collections.slice(-1)[0].id <= 0) {
-      setScrollEnd(true);
-    }
-    if (collections.length === 0) {
-      setScrollEnd(false);
-    }
-  }, [JSON.stringify(collections)]);
-
   return (
     <>
-      <div className="mb-4 italic">! only shows last 10 collections atm !</div>
       <div className="grid grid-cols-12 gap-4 w-full">
         {collections.map(collection => (
           <div className="col-span-3 " key={collection.id}>
@@ -75,7 +70,9 @@ export function ViewCollections() {
           </div>
         ))}
       </div>
-      {!scrollEndReached && <div className="w-4 h-4" ref={loader} />}
+      <div className="mt-4" ref={loader}>
+        <LoaderSmall isLoading={!scrollEndReached} message={''}></LoaderSmall>
+      </div>
     </>
   );
 }

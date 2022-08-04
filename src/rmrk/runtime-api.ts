@@ -73,8 +73,18 @@ export function useRmrkCollections() {
       for (let i = index; i >= minNumber; i--) {
         collArray[index - i] = i;
       }
+
       const images = await Promise.all(collArray.map(x => queryCollectionByIndex(x)));
-      resolve(images.filter(x => x?.description));
+      const filteredImages = images.filter(x => x?.description);
+
+      let result;
+      if (minNumber > 0) {
+        result = filteredImages;
+      } else {
+        result = { collections: filteredImages, end: true };
+      }
+
+      resolve(result);
     });
 
   const queryNft = (collectionId, nftId) =>
