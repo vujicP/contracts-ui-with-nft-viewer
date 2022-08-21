@@ -5,7 +5,7 @@ import BN from 'bn.js';
 import type { ApiState } from 'types';
 
 export enum RPC {
-  LOCAL = 'ws://192.168.0.199:9944',
+  LOCAL = 'ws://127.0.0.1:9944',
   CONTRACTS = 'wss://rococo-contracts-rpc.polkadot.io',
   SHIBUYA = 'wss://rpc.shibuya.astar.network',
   SHIDEN = 'wss://rpc.shiden.astar.network',
