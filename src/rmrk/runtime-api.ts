@@ -87,6 +87,54 @@ export function useRmrkCollections() {
       resolve(result);
     });
 
+  const queryResourceImage = resource =>
+    new Promise<any>(async (resolve, reject) => {
+      const metadata = await fetchMetadata(resource?.metadata);
+      let imageUrl = null;
+      if (metadata && metadata.mediaUri) {
+        imageUrl = await fetchImage(metadata.mediaUri);
+      }
+      resolve(imageUrl);
+    });
+
+  const queryResources = (collectionId, nftId, resourceId = 0) =>
+    new Promise<any>(async (resolve, reject) => {
+      const result = await api.query.rmrkCore.resources(
+        Number(collectionId),
+        Number(nftId),
+        resourceId
+      );
+      const resource = result.toHuman();
+      if (!resource) {
+        resolve(resource);
+        return;
+      }
+      let imageUrl = null;
+      if (resource.resource && resource.resource.Basic) {
+        imageUrl = await queryResourceImage(resource?.resource?.Basic);
+      }
+      resolve({ ...resource, imageUrl });
+    });
+
+  const queryNextResource = (collectionId, nftId) =>
+    new Promise<any>(async (resolve, reject) => {
+      let currentResource = await queryResources(collectionId, nftId, 0);
+      let nextResource = await queryResources(collectionId, nftId, 1);
+
+      let resourceId = 1;
+      while (nextResource && !nextResource.pending) {
+        currentResource = await queryResources(collectionId, nftId, resourceId);
+        nextResource = await queryResources(collectionId, nftId, resourceId + 1);
+        resourceId = resourceId + 1;
+      }
+
+      resolve({
+        resourceId,
+        currentResource,
+        nextResource,
+      });
+    });
+
   const queryNft = (collectionId, nftId) =>
     new Promise<any>(async (resolve, reject) => {
       const result = await api.query.rmrkCore.nfts(collectionId, nftId);
@@ -96,7 +144,15 @@ export function useRmrkCollections() {
       if (metadata && metadata.mediaUri) {
         imageUrl = await fetchImage(metadata.mediaUri);
       }
-      resolve(Object.assign(nft, { collectionId, id: nftId, metadata, imageUrl }));
+      const resource = await queryNextResource(collectionId, nftId);
+      const resources = await Promise.all(
+        [...Array(resource?.resourceId ?? 0).keys()].map(id =>
+          queryResources(collectionId, nftId, id)
+        )
+      );
+      resolve(
+        Object.assign(nft, { collectionId, id: nftId, metadata, imageUrl, ...resource, resources })
+      );
     });
 
   const queryNfts = collectionId =>
@@ -138,43 +194,6 @@ export function useRmrkCollections() {
     });
 
   return { queryCollections, queryCollectionByIndex, queryAllNfts, queryNfts, queryNft };
-}
-
-export function useRmrkCoreResources() {
-  const { api } = useApi();
-  const { value: accountId } = useGlobalAccountId();
-
-  const queryResources = (collectionId, nftId, resourceId = 0) =>
-    new Promise<any>(async (resolve, reject) => {
-      const result = await api.query.rmrkCore.resources(
-        Number(collectionId),
-        Number(nftId),
-        resourceId
-      );
-      resolve(result.toHuman());
-    });
-
-  const queryNextResource = (collectionId, nftId) =>
-    new Promise<any>(async (resolve, reject) => {
-      let currentNft = await queryResources(collectionId, nftId, 0);
-      let nextNft = await queryResources(collectionId, nftId, 1);
-
-      let resourceId = 1;
-      while (nextNft && !nextNft.pending) {
-        currentNft = await queryResources(collectionId, nftId, resourceId);
-        nextNft = await queryResources(collectionId, nftId, resourceId + 1);
-        resourceId = resourceId + 1;
-      }
-
-      resolve({
-        resourceId,
-        currentNft,
-        nextNft,
-        accountId,
-      });
-    });
-
-  return { queryResources, queryNextResource };
 }
 
 export const useRmrkAcceptResource = () => {
