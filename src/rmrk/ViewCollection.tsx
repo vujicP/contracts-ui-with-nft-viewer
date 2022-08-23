@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { AccountSelect } from 'ui/components';
 import { PageFull } from 'ui/templates';
+import { InfoData } from './Infodata';
 import { useRmrkCollections } from './runtime-api';
 import { useGlobalAccountId } from './useGlobalAccountId';
 
@@ -19,6 +20,16 @@ export function ViewCollection() {
     queryCollectionByIndex(collectionId).then(setCollection);
     queryNfts(collectionId).then(setNfts);
   }, []);
+
+  const entries = {
+    'Collection Id': collection.id,
+    Description: collection.description,
+  };
+
+  if (collection.metadata?.image) {
+    entries['Image resource'] = collection.metadata.image;
+  }
+
   return (
     <PageFull
       header="RMRK viewer"
@@ -34,9 +45,7 @@ export function ViewCollection() {
       }
     >
       <div className="mb-4">
-        <div>Collection ID: {collection.id}</div>
-        <div>Description: {collection.description}</div>
-        {collection.metadata?.image && <div>Image resource: {collection.metadata.image}</div>}
+        <InfoData entries={entries}></InfoData>
       </div>
       <div className="grid grid-cols-12 gap-4 w-full">
         {nfts.map(nft => (
@@ -50,6 +59,7 @@ export function ViewCollection() {
               </div>
               <div className="border-t -md pl-4 pt-4 pb-4 text-gray-500 dark:border-gray-700 border-gray-200 items-center text-base dark:text-gray-300 text-gray-500">
                 <div className="mb-2 font-semibold">{nft?.metadata?.name}</div>
+                <div className="mb-2">Id: {nft.id}</div>
                 <div>{nft.metadata?.description}</div>
               </div>
             </div>

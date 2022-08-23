@@ -64,8 +64,11 @@ export function ViewNfts() {
               </div>
               <div className="border-t -md pl-4 pt-4 pb-4 text-gray-500 dark:border-gray-700 border-gray-200 items-center text-base dark:text-gray-300 text-gray-500">
                 <div className="mb-2 font-semibold">{nft?.metadata?.name}</div>
+                <div className="mb-2">Id: {nft.id}</div>
                 <div>{nft?.metadata.description}</div>
-                <div className="mt-2 italic">{nft?.collection.description}</div>
+                <div className="mt-2 italic">
+                  {nft?.collection.description} (Id: {nft?.collectionId})
+                </div>
               </div>
             </div>
           </div>
