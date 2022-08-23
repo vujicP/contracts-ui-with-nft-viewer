@@ -3,10 +3,13 @@
 
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { AccountSelect } from 'ui/components';
 import { PageFull } from 'ui/templates';
 import { useRmrkCollections } from './runtime-api';
+import { useGlobalAccountId } from './useGlobalAccountId';
 
 export function ViewCollection() {
+  const { value: accountId, onChange: setAccountId, ...accountIdValidation } = useGlobalAccountId();
   const { queryCollectionByIndex, queryNfts } = useRmrkCollections();
   const navigate = useNavigate();
   const { collectionId } = useParams();
@@ -17,7 +20,19 @@ export function ViewCollection() {
     queryNfts(collectionId).then(setNfts);
   }, []);
   return (
-    <PageFull header="RMRK viewer" help={'Explore RMRK collections and NFTs'}>
+    <PageFull
+      header="RMRK viewer"
+      help={'Explore RMRK collections and NFTs'}
+      accessory={
+        <AccountSelect
+          id="accountId"
+          className="mb-2"
+          value={accountId}
+          onChange={setAccountId}
+          {...accountIdValidation}
+        />
+      }
+    >
       <div className="mb-4">
         <div>Collection ID: {collection.id}</div>
         <div>Description: {collection.description}</div>

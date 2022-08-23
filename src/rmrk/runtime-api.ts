@@ -198,9 +198,8 @@ export function useRmrkCollections() {
 
 export const useRmrkAcceptResource = () => {
   const { api, keyring } = useApi();
-  const { value: accountId } = useGlobalAccountId();
 
-  const acceptResource = async ({ collectionId, nftId, resourceId }) =>
+  const acceptResource = async ({ collectionId, nftId, resourceId = 0, accountId }) =>
     new Promise<any>(async (resolve, reject) => {
       const txHash = await api.tx.rmrkCore
         .acceptResource(Number(collectionId), Number(nftId), Number(resourceId))
