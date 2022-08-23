@@ -23,11 +23,7 @@ const options = [
   {
     label: 'Local Node',
     value: RPC.LOCAL,
-  },
-  {
-    label: 'Rooster Node',
-    value: RPC.ROOSTER,
-  },
+  }
 ];
 
 export function NetworkAndUser() {
